@@ -39,10 +39,19 @@ jobs:
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build --project-name=ezpaint
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -d "playground" ]; then
+            OUT_DIR="playground"
+          elif [ -d "build" ]; then
+            OUT_DIR="build"
+          else
+            echo "Neither playground nor build directory found. Contents:"
+            ls -la
+            exit 1
+          fi
+          npx wrangler pages deploy "$OUT_DIR" --project-name=ezpaint
 
 
